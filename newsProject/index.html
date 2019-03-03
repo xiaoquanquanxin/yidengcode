@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>新闻新管理系统</title>
 </head>
 <body>
-<form action="" method="get">
-    <label>新闻标题 <input type="text" name="newstitle"></label>
-    <label>图片地址 <input type="text" name="newsimg"></label>
-    <label>文本时间 <input type="text" name="addtime"></label>
+<form action="mysql.php" method="get">
+    <label>新闻标题 <input type="text" name="newstitle"></label><br>
+    <label>新闻内容 <textarea rows="5" name="newscontext"></textarea> </label><br>
+    <label>图片地址 <input type="text" name="newsimg"></label><br>
+    <label>文本时间 <input type="date" name="addtime"></label><br>
     <button type='submit'>提交</button>
 </form>
 </body>
