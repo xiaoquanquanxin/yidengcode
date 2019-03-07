@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jquery</title>
+</head>
+<body>
+<script>
+    Function.prototype.myBind = function (obj) {
+        var oarg = arguments;
+        if (obj instanceof Object) {
+            var _this = this;
+            return function () {
+                var arg = [].slice.call(oarg, 1);
+                var arg1 = [].slice.call(arguments, 0);
+                _this.apply(obj, arg.concat(arg1));
+            };
+        } else {
+            throw new Error('xxx');
+        }
+    };
+
+    function geta(a, b, c) {
+        console.log(this.a);
+        console.log(a, b, c);
+    }
+    var data = {a: 1234};
+    var a = geta.myBind(data);
+    //    a(888);
+</script>
+
+<script>
+    (function () {
+        var jquery = function (selector) {
+            return new jquery.prototype.init(selector);
+        };
+        jquery.prototype = {
+            constructor: jquery,
+            init: function (selector) {
+                this.selector = selector;
+            }
+        };
+        jquery.prototype.init.prototype = jquery.prototype;
+        window.jquery = jquery;
+        var extendsFn = function (obj) {
+            for (var key in obj) {
+                this[key] = obj[key]
+            }
+            return this;
+        };
+        jquery.prototype.extend = jquery.extend = extendsFn;
+
+
+    })();
+    //    var a = new jquery(123456);
+    //    var b = jquery(1234567);
+    //    console.log(a, b);
+</script>
+<script>
+    var obj = {name: 'name=权鑫'};
+    addReload(obj, 'getName', function () {
+        return this.name;
+    });
+    addReload(obj, 'getName', function (name) {
+        return '一个参数';
+    });
+    addReload(obj, 'getName', function (a, b) {
+        return a + b;
+    });
+    var a = obj.getName();
+    var b = obj.getName('111');
+    var c = obj.getName(12, 32);
+    console.log(a);
+    console.log(b);
+    console.log(c);
+    function addReload(obj, key, fn) {
+        var oldFn = obj[key];
+        obj[key] = function () {
+            if (fn.length === arguments.length) {
+                return fn.apply(obj, arguments);
+            } else {
+                return oldFn.apply(obj, arguments);
+            }
+        }
+    }
+</script>
+函数的重载:
+注册一个函数为两种参数状态下的情况还行
+我给一个对象的属性注册了三个函数,它们的参数分别是零个,一个,和两个
+为什么不会覆盖?
+我再调用零个参数的时候,他会不匹配我的参数,所以进入了else分支
+然后就会调用oldFn,那是我上一次注册的函数,这时又会进入第二次注册的函数
+再次判断,进入else分支,又会进入第一次注册的函数,找到无参数的函数
+弱点:传入参数与注册函数的形参完全不匹配时,就会报错
+<script>
+    function contentLoaded(win, fn) {
+        var done = false,   //执行完成判断
+                top = true, //判断当前窗口是否在顶层窗口，不是的话报错
+                doc = win.document,
+                root = doc.documentElement,
+                modern = doc.addEventListener, //高级浏览器和低级浏览器判断变量
+
+                add = modern ? 'addEventListener' : 'attachEvent',
+                rem = modern ? 'removeEventListener' : 'detachEvent',
+                pre = modern ? '' : 'on',
+
+                init = function (e) {
+                    // 输出执行的事件类型
+                    console.log(e.type ? e.type : e);
+
+                    //输出readystatechange的状态
+                    if (e.type == 'readystatechange') {
+                        console.log(doc.readyState);
+                    }
+
+                    // 保证每个预加载的事件只执行一次fn，包括DOMContentLoaded。但是保证init事件不再在load事件中执行。
+                    if (e.type == 'readystatechange' && doc.readyState != 'complete') return;
+
+                    // 将onload同名的加载事件清除掉，防止又执行一次，作者这倒是想的很周到啊
+                    (e.type == 'load' ? win : doc)[rem](pre + e.type, init, false);
+
+                    // 下面是DOMContentLoaded或者readystatechange真正完成的时候才会执行，或者更低级浏览器完成
+                    // 时执行
+                    if (!done && (done = true)) {
+                        console.log('我已经被' + e.type + '执行了');
+                        fn.call(win, e.type || e);
+                    }
+                },
+
+                poll = function () {
+
+                    // ie7以及以下的浏览器使用doscroll进行模拟domcontentloaded
+                    try {
+                        root.doScroll('left');
+                    } catch (e) {
+                        console.log('低版本浏览器还没有加载完成，继续递归执行至加载完成');
+                        // 因为间隔50毫秒时间还是相对较长的，可能这个时候readystatechange已经提早执行了
+                        setTimeout(poll, 50);
+                        return;
+                    }
+
+                    console.log('加载完成，可以使用readystatechange');
+
+                    // 下面是保证低级浏览器如果不支持readystatechange的情况下，一定会执行这个init函数
+                    init('poll');
+                };
+
+        // 如果文档readyState为complete代表load事件准备被触发，所以这个时候可以直接执行要执行的函数了
+        if (doc.readyState == 'complete') {
+            fn.call(win, 'lazy');
+        } else {
+            // 不是最新的浏览器，进行doScroll加载
+            // 可以使用Charles中国年的Throttle Settings来限速实现执行这个函数，我是限速到10kb
+            if (!modern && root.doScroll) {
+                console.log('低版本浏览器执行doScroll！');
+                //判断当前窗口是否插入到了iframe窗口，因为这个属性兼容性未知，需要用try防止出错
+                try {
+                    top = !win.frameElement;
+                } catch (e) {
+                }
+                // 如果当前窗口是以iframe插入到窗口中的，那么应该使用readystatechange
+                if (top) poll();
+            }
+            console.log('IE9及更高级浏览器的DOMContentLoaded，走你！');
+            doc[add](pre + 'DOMContentLoaded', init, false); //只有ie9以及更高版本支持
+            console.log('默认走一次的readystatechange');
+            doc[add](pre + 'readystatechange', init, false); //兼容ie8以及更低的浏览器
+            console.log('默认走一次的onload');
+            win[add](pre + 'load', init, false); //高级浏览器清除win的onload中执行的函数，IE浏览器清除doc中的onload函数
+        }
+    }
+</script>
+</body>
+</html>
