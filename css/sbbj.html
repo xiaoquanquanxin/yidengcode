@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+<script>
+
+    var ajax = (function () {
+        if (window.XMLHttpRequest) {
+            return function () {
+                return new XMLHttpRequest();
+            }
+        } else if (ActiveXObject) {
+            return function () {
+                var arr = ['MSXML2.XMLHTTP', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP.4.0', 'MSXML2.XMLHTTP.6.0'];
+                var active = null;
+                try {
+                    for (var i = 0; i < arr.length; i++) {
+                        active = new ActiveXObject(arr[i]);
+                    }
+                } catch (e) {
+                }
+                return active;
+            }
+        } else {
+            throw  new Error('不支持');
+        }
+    })();
+
+    var a = ajax();
+    var b = ajax();
+    a.open('get', 'test.json', true);
+
+    a.onreadystatechange = function (e) {
+        if (a.readyState === 4) {
+            if (a.status === 200) {
+                console.log(a.responseText)
+            }
+        }
+    };
+    a.send(null);
+    //    console.log(a, b, a == b);
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jquery源码</title>
+    <style>* {
+        font-size: 16px;
+    }</style>
+</head>
+<body>
+<script src="../jquery1.8.3.js"></script>
+<pre>
+(function(window, undefined) {
+// jQuery 代码
+})(window);
+可以确保你需要的 undefined 确实就是 undefined。</pre>
+<br>
+<pre>jQuery.fn.init.prototype = jQuery.fn
+没这一句,jquery的实例的原型就不是jquery.fn了
+</pre>
+<br>
+<pre>jQuery 源码晦涩难读的另一个原因是，使用了大量的方法重载，但是用起来却很方便
+eg:
+$('#id').attr('title');
+$('#id').attr('title','jQuery');
+jquery有无数重载,都是if else去做的
+</pre>
+<br>
+<pre>jQuery.fn.extend 与 jQuery.extend
+可以注册给实例,原型和jQuery
+</pre>
+<br>
+<pre>链式调用及回溯
+链式调用就是return this
+回溯,需要增栈
+
+<p>+i + (i < 0 ? len : 0);这句厉害</p>
+</pre>
+<br>
+
+<br>
+<pre>变量冲突处理
+noConflict
+</pre>
+</body>
+</html>
+<script>
+    function bbbb() {
+        return new bbbb.prototype.init()
+    }
+
+    bbbb.prototype = {
+        init: function () {
+
+        },
+    };
+    bbbb.prototype.init.prototype = bbbb.prototype;
+
+    var a = new bbbb();
+    var b = bbbb();
+    //    console.log(a, b);
+</script>
+<script>
+    function initReloadFn(obj, key, fn) {
+        var oldFn = obj[key];
+        obj[key] = function () {
+            if (fn.length === arguments.length) {
+                return fn.apply(obj, arguments);
+            } else {
+                return oldFn.apply(obj, arguments);
+            }
+        }
+    }
+    var obj = {name: 'qx'};
+    initReloadFn(obj, 'getName', function () {
+        return this.name;
+    });
+
+    initReloadFn(obj, 'getName', function (a) {
+        return a;
+    });
+
+    initReloadFn(obj, 'getName', function (a, b) {
+        return a * b;
+    });
+    //    console.log(obj.getName(), obj.getName([1, 2]), obj.getName(1, 2));
+</script>
+<script>
+    jQuery.fn.extend({
+        getFn: function () {
+            return this.fn;
+        }
+    });
+    jQuery.extend({
+        jqFn: function () {
+            return this.jqFn;
+        }
+    });
+    var a = jQuery('a').extend({
+        getName: function () {
+            return this.name;
+        }
+    });
+    var b = jQuery('b');
+    //    console.log(a.getName);
+    //    console.log(b.getName, b.getFn)
+</script>
+<script>
+    function bbbb(option) {
+        return new bbbb.prototype.init(option)
+    }
+
+    bbbb.prototype = {
+        init: function (option) {
+            this.option = option;
+        },
+        pushStack: function (em) {
+            var temp = bbbb(em);
+            temp.preveJQ = this;
+            return temp;
+        },
+        prev: function () {
+            return this.preveJQ;
+        }
+    };
+    bbbb.prototype.init.prototype = bbbb.prototype;
+
+    var a = new bbbb('aaa');
+    var b = bbbb('bbb');
+    //    console.log(a, b);
+    var c = b.pushStack('ccc');
+    console.log(c);
+    console.log(c.prev());
+
+</script>
