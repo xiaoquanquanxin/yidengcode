@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>csshack</title>
+</head>
+<body>
+<h3>三种方式:</h3>
+<ol>
+    <li>IE条件注释法,ie10及以后不识别</li>
+    <li>属性前缀</li>
+    <li>选择器前缀</li>
+</ol>
+<p>IE条件注释</p>
+<p>gt大于,e等于gte,大于等于</p>
+<!---->
+<!--><!-->
+<!--[]><![]-->
+<!--[if IE]><![endif]-->
+<!--[if IE 6]><![endif]-->
+<!--[if gte IE 7]>大于等于ie7 gte 7<![endif]-->
+<!--[if lte IE 7]>小于等于ie7 lte 7<![endif]-->
+<!--[if lt IE 9]>小于ie9 lt 9<![endif]-->
+<!--[if !IE 8]>不是ie8,不是某个版本的ie<![endif]-->
+<hr>
+<p>属性前缀</p>
+<ol>
+    <li>无法通过属性前缀区分9和10</li>
+    <li>\9 6-10</li>
+    <li>\0 8+</li>
+    <li>\9\0 仅9.10</li>
+    <li>* 所有,通常用作7</li>
+    <li>_ 仅6</li>
+</ol>
+<style type="text/css">
+    .test {
+        color: purple;
+        color: yellow \9;
+        /*color: orange\0;*/
+        color: red \9 \0;
+        *color: green;
+        _color: blue;
+    }
+</style>
+<p class="test">
+    color
+    color /9 6-10
+    color /0 8+
+    color /9/10 9.10
+    *color
+    _color
+
+    body { background: red ; } /* 所有浏览器都支持这样的写法*/
+    body { _background: orange ; } /* 只有IE6才支持这样的写法*/
+    body { *background: yellow; } /* 所有IE浏览器都支持这样的写法*/
+    body { +background: green; } /* 只有IE6和IE7浏览器能支持这样的写法*/
+    body { -background: blue; } /* 据说也只有IE6浏览器能支持，我没测试过*/
+    body { *+background: purple; } /* IE7和IE10浏览器能支持*/
+    body { background: pink \0; } /* \零 的写法只有IE8及以上浏览器可以支持*/
+</p>
+<hr>
+<p>选择器前缀</p>
+<style>
+    /*ie6*/
+    * html .select {
+        color: purple;
+    }
+
+    /*ie7*/
+    * + html .select {
+        color: red
+    }
+
+    /*ie8*/
+    @media \0screen {
+        html .select {
+            color: orange;
+        }
+    }
+
+    /*ie9 ie10*/
+    @media screen and (min-width: 0\0
+    ) {
+        html .select {
+            color: yellow;
+        }
+    }
+
+    /*ie10+*/
+    @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none)  {
+        html .select {
+            color: green;
+        }
+    }
+    html[data-useragent*='MSIE 10.0'] .select {
+        color: blue;
+    }
+</style>
+<h2 class="select">
+    select
+</h2>
+</body>
+</html>
