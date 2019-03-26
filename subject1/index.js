@@ -1,5 +1,5 @@
 //  柯里化对于jq判断参数的类型
-var arr = ['number', 'string', 'boolean'];
+let arr = ['number', 'string', 'boolean'];
 
 function getType(type) {
 	return function (param) {
@@ -7,8 +7,8 @@ function getType(type) {
 	}
 }
 
-var data = {};
-for (var i = 0; i < arr.length; i++) {
+let data = {};
+for (let i = 0; i < arr.length; i++) {
 	data['is' + arr[i]] = getType(arr[i]);
 }
 // console.log(data['isnumber']());
@@ -42,7 +42,7 @@ Function.prototype.uncurry = function () {
 	return this.call.bind(this);
 };
 
-var push = Array.prototype.push.uncurry();
+let push = Array.prototype.push.uncurry();
 push(arr, 3);
 console.log(arr);
 
@@ -65,32 +65,69 @@ function fun(n, o) {
 	}
 }
 
-var a = fun(0);
+let a = fun(0);
 a.cccccc(1);
 a.cccccc(2);
-var b = fun(0).cccccc(1).cccccc(2).cccccc(3);
-var c = fun(0).cccccc(1);
+let b = fun(0).cccccc(1).cccccc(2).cccccc(3);
+let c = fun(0).cccccc(1);
 c.cccccc(2);
 c.cccccc(3);
 
 
+function sum(n, s) {
+	console.trace();
+	if (!n) {
+		return s;
+	}
+	return sum(n - 1, n + s)
+}
+
+sum(11, 0)
 
 
+//  函数式编程，函子
+let Container = function (x) {
+	this.val = x;
+};
+Container.prototype.map = function (f) {
+	return Container.of(f(this.val));
+};
+Container.of = x => new Container(x);
 
 
+//  maybe函子
+Functor = function (val) {
+	this.val = val;
+};
+Functor.of = function (val) {
+	return new Functor(val);
+};
+Functor.prototype.map = f => {
+	return Functor.of(f(this.val));
+};
+
+class Maybe extends Functor {
+	static of(x) {
+		return new Maybe(x);
+	}
+
+	map(f) {
+		return this.val ? Maybe.of(f(this.val)) : Maybe.of(null);
+	}
+}
+
+let m = Maybe.of('JAMESjawo;fja').map(function (s) {
+	return s.toUpperCase();
+});
+console.log(m);
 
 
+//  IO函子
+function IO(f) {
+	this.val = f;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
+IO.prototype.map = function (f) {
+	return new IO(compose(f, this.val))
+};
 
